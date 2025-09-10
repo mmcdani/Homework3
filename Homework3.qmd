@@ -1,0 +1,114 @@
+---
+title: "Homework3"
+format: html
+editor: visual
+---
+
+
+Load data lists from homework 2
+```{r}
+load("hw2_list.rda")
+```
+
+
+## Task 1: Control Flow Practice
+For this task we want to  characterize the post-treatment (or placebo) blood pressure measurement as
+optimal (≤ 120), borderline (120 < bp ≤ 130), and high (> 130).
+ 
+Load data frames
+```{r}
+bp_list$treatment
+
+bp_list$placebo
+```
+
+ 
+Create a data frame from above called status
+```{r}
+names(bp_list) <- c("treatment", "placebo")
+
+bp_list$treatment$status <- character(20)
+bp_list$placebo$status <- character(10)
+#treatment had 20 observations and placebo had 10 observations
+```
+
+Suppose we want to characterize the post-treatment (or placebo) blood pressure measurement as
+optimal (≤ 120), borderline (120 < bp ≤ 130), and high (> 130). 
+```{r}
+  for (i in 1:nrow(bp_list[[1]])) {
+    post_bp <- bp_list[[1]]$post[i]
+    if (post_bp > 130) {
+    bp_list[[1]]$status[i] <- "high"
+  }  else if (post_bp > 120 & post_bp <= 130) {
+      bp_list[[1]]$status[i] <- "borderline"
+  }  else if (post_bp <= 120) {
+      bp_list[[1]]$status[i] <- "optimal"
+  }  else {
+      print("error")
+  }
+}
+```
+ 
+Create the status column’s values and repeat for the placebo data frame (within the list)
+```{r}
+ for (i in 1:nrow(bp_list[[2]])) {
+    post_bp <- bp_list[[2]]$post[i]
+    if (post_bp > 130) {
+    bp_list[[2]]$status[i] <- "high"
+  }  else if (post_bp > 120 & post_bp <= 130) {
+      bp_list[[2]]$status[i] <- "borderline"
+  }  else if (post_bp <= 120) {
+      bp_list[[2]]$status[i] <- "optimal"
+  }  else {
+      bp_list[[2]]$status[i] <- "error"
+  }
+}
+```
+ 
+## Task 2: Function Writing 
+
+Write a function that tales a list with treatment and placebo data frame as an argument. Gives no default value takes in an R function with the default value being set to "mean".Finds the statistic of interest for the pre, post, and diff columns
+of both data frames.– Use my_fun <- get(stat) within the function to get the function from the quoted string.
+```{r}
+#write a function with the treatment and placebo data frame
+summary_bp <- function(df_list, stat = "mean") {
+  my_fun <- get(stat) #get function from quoted string
+ 
+#get treatment and placebo data frames
+  treatment_df <- df_list[[1]]
+  placebo_df <- df_list[[2]]
+  
+#create a vector for statistic values
+values <- c(
+  my_fun(treatment_df$pre, na.rm = TRUE),
+  my_fun(treatment_df$post, na.rm = TRUE),
+  my_fun(treatment_df$diff, na.rm = TRUE),
+  my_fun(placebo_df$pre, na.rm = TRUE),
+  my_fun(placebo_df$post, na.rm = TRUE),
+  my_fun(placebo_df$diff, na.rm = TRUE)
+)
+
+#create a vector of names that is created dynamically based on the statistic passed, create a vector with the actual statistic values, and then assign names() to your vector.
+
+names(values) <- paste0(stat, "_",
+                        rep(c("treatment", "placebo"), each =3), "_",
+                        rep(c("pre","post","diff"), 2))
+return(values)
+}
+
+```
+ 
+Apply function to list of data frames
+```{r}
+summary_bp(bp_list)
+```
+
+Use it without specifying your statistic, with specifying your statistic as "var", "sd", "min", and "max"
+```{r}
+summary_bp(bp_list, "var")
+summary_bp(bp_list, "sd")
+summary_bp(bp_list, "min")
+summary_bp(bp_list, "max")
+
+```
+
